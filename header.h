@@ -1,5 +1,10 @@
 #pragma once
 
+#include <iostream>
+#include <limits>
+#include <stdio.h>
+#include <vector>
+
 /**
  * generateMatrix
  * @param - int numVertices - the number of vertices in the graph
@@ -38,6 +43,57 @@ int** generateMatrix(int numVertices, int numEdges, int maxWeight) {
 		std::cout << "\n";
 	}
 	return matrix;
+}
+
+/**
+ * generateList
+ * @param - int numVertices - the number of vertices in the graph
+ * @param - int numEdges - the number of edges in the graph
+ * @param - int maxWeight - the maximum weight of an edge in the graph
+ *
+ * This function generates a random adjacency list for a graph with numVertices vertices and numEdges edges. The maximum weight of an edge is maxWeight.
+ */
+
+std::vector<std::vector<std::pair<int, int>>> generateList(int numVertices, int numEdges, int maxWeight) {
+	std::vector<std::vector<std::pair<int, int>>> adjList;
+	for (int i = 0; i < numVertices; i++) {
+		std::vector<std::pair<int, int>> temp;
+		adjList.push_back(temp);
+	}
+	int numEdgesAdded = 0;
+	while (numEdgesAdded < numEdges) {
+		int i = rand() % numVertices;
+		int j = rand() % numVertices;
+		if (i != j) {
+			bool found = false;
+			for (int k = 0; k < adjList[i].size(); k++) {
+				if (adjList[i][k].first == j) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				int weight = rand() % maxWeight + 1;
+				std::pair<int, int> temp;
+				temp.first = j;
+				temp.second = weight;
+				adjList[i].push_back(temp);
+				temp.first = i;
+				adjList[j].push_back(temp);
+				numEdgesAdded++;
+			}
+		}
+	}
+	/** Print the generated list. */
+	std::cout << "The generated list: \n";
+	for (int i = 0; i < numVertices; i++) {
+		std::cout << i << ": ";
+		for (int j = 0; j < adjList[i].size(); j++) {
+			std::cout << "(" << adjList[i][j].first << ", " << adjList[i][j].second << ") ";
+		}
+		std::cout << "\n";
+	}
+	return adjList;
 }
 
 /**

@@ -43,11 +43,13 @@ int main(int argc, int* argv[])
 	/** Prim's Algorithm with adjacency list. */
 	std::cout << "\nPrim's Algorithm with adjacency list" << std::endl;
 	/** Generate a random adjacency list. */
-	int** matrixPL = generateMatrix(numVertices, numEdges, maxWeight);
+	std::vector<std::vector<std::pair<int, int>>> list = generateList(numVertices, numEdges, maxWeight);
+	std::vector<std::vector<std::pair<int, int>>>* listPtr = &list;
 	/** Run Prim's Algorithm with adjacency list. */
-	PrimList* primList = new PrimList(numVertices, matrixPL);
+	PrimList* primList = new PrimList(numVertices, listPtr);
 	primList->runPrimList();
-	
+	/** Print the MST. */
+	primList->printDistance();	
 	
 	/** Dijkstra's Algorithm */
 	std::cout << "\nDijkstra's Algorithm" << std::endl;
