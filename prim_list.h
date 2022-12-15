@@ -13,159 +13,99 @@
 #include <limits>
 #include <stdio.h>
 #include <vector>
+#include <utility>
+#include "header.h"
 
-/**
- * generateHeap
- * @param - int numVertices - the number of vertices in the graph
- * @param - int numEdges - the number of edges in the graph
- * @param - int maxWeight - the maximum weight of an edge in the graph
- * 
- * This function generates a random heap for a graph with numVertices vertices and numEdges edges. The maximum weight of an edge is maxWeight.
- * The heap is represented as a vector of vectors of pairs. The first elements of the pairs are the vertices they are connected to, and the second elements are the weights of the edges.
- */
+ /**
+  * PrimList's Algorithm
+  */
 
-std::vector<std::vector<std::pair<int, int>>> heap(int numVertices, int numEdges, int maxWeight)
-{
-	std::vector<std::vector<std::pair<int, int>>> heap;
-	for (int i = 0; i < numVertices; i++)
-	{
-		std::vector<std::pair<int, int>> temp;
-		heap.push_back(temp);
-	}
-	int numEdgesAdded = 0;
-	while (numEdgesAdded < numEdges)
-	{
-		int i = rand() % numVertices;
-		int j = rand() % numVertices;
-		if (i != j)
-		{
-			int weight = rand() % maxWeight + 1;
-			std::pair<int, int> temp1 = std::make_pair(j, weight);
-			std::pair<int, int> temp2 = std::make_pair(i, weight);
-			heap[i].push_back(temp1);
-			heap[j].push_back(temp2);
-			numEdgesAdded++;
-		}
-	}
-	/** Print the generated heap. */
-	std::cout << "The generated heap: \n";
-	for (int i = 0; i < numVertices; i++)
-	{
-		for (int j = 0; j < heap[i].size(); j++)
-		{
-			std::cout << heap[i][j].first << " " << heap[i][j].second << " ";
-		}
-		std::cout << "\n";
-	}
-	return heap;
-}
-
-class PrimHeap
-{
+class PrimList {
 public:
-	PrimHeap(int numVertices, std::vector<std::vector<std::pair<int, int>>> heap);
-	~PrimHeap();
-	void runPrim();
-	void printMST();
+	PrimList(int numVertices, std::vector<std::vector<std::pair<int, int>>>* adjList);
+	~PrimList();
+	void runPrimList();
+	void printDistance();
 private:
 	int numVertices;
-	std::vector<std::vector<std::pair<int, int>>> heap;
-	int* parent;
-	int* key;
-	bool* inMST;
+	std::vector<std::vector<std::pair<int, int>>>* adjList;
+	int* distance;
+	bool* sptSet;
 };
 
 /**
- * PrimHeap
+ * PrimList
  * @param - int numVertices - number of vertices in the graph
- * @param - std::vector<std::vector<std::pair<int, int>>> heap - the heap
+ * @param - std::vector<std::vector<std::pair<int, int>>>* adjList - adjacency list of the graph
  * @return none
- * 
- * This is the constructor.
  */
 
-PrimHeap::PrimHeap(int numVertices, std::vector<std::vector<std::pair<int, int>>> heap)
-{
+PrimList::PrimList(int numVertices, std::vector<std::vector<std::pair<int, int>>>* adjList) {
 	this->numVertices = numVertices;
-	this->heap = heap;
-	parent = new int[numVertices];
-	key = new int[numVertices];
-	inMST = new bool[numVertices];
-	for (int i = 0; i < numVertices; i++)
-	{
-		key[i] = std::numeric_limits<int>::max();
-		inMST[i] = false;
-	}
+	this->adjList = adjList;
+	distance = new int[numVertices];
+	sptSet = new bool[numVertices];
 }
 
 /**
- * ~PrimHeap
+ * ~PrimList
  * @param none
  * @return none
- * 
- * This is the destructor. It frees up memory by deleting parent, key, and inMST.
  */
 
-PrimHeap::~PrimHeap()
-{
-	delete[] parent;
-	delete[] key;
-	delete[] inMST;
+PrimList::~PrimList() {
+	delete[] distance;
+	delete[] sptSet;
 }
 
 /**
- * runPrim()
+ * runPrimList
  * @param none
- * @return void
- * 
- * This function runs Prim's Algorithm on the heap.
+ * @return none
+ *
+ * This function runs PrimList's Algorithm.
  */
 
-void PrimHeap::runPrim()
-{
-	key[0] = 0;
-	parent[0] = -1;
-	for (int i = 0; i < numVertices - 1; i++)
-	{
-		int minKey = std::numeric_limits<int>::max();
-		int minKeyIndex;
-		for (int j = 0; j < numVertices; j++)
-		{
-			if (inMST[j] == false && key[j] < minKey)
-			{
-				minKey = key[j];
-				minKeyIndex = j;
-			}
-		}
-		inMST[minKeyIndex] = true;
-		for (int j = 0; j < heap[minKeyIndex].size(); j++)
-		{
-			int v = heap[minKeyIndex][j].first;
-			int weight = heap[minKeyIndex][j].second;
-			if (inMST[v] == false && weight < key[v])
-			{
-				parent[v] = minKeyIndex;
-				key[v] = weight;
+void PrimList::runPrimList() {
+	// Initialize all distances as infinite and sptSet[] as false
+	for (int i = 0; i < numVertices; i++) {
+		distance[i] = std::numeric_limits<int>::max();
+		sptSet[i] = false;
+	}
+
+	// Distance of source vertex from itself is always 0
+	distance[0] = 0;
+
+	// Find shortest path for all vertices
+	for (int count = 0; count < numVertices - 1; count++) {
+		// Pick the minimum distance vertex from the set of vertices not yet processed. u is always equal to src in first iteration.
+		int u = minDistance(distance, sptSet);
+
+		// Mark the picked vertex as processed
+		sptSet[u] = true;
+
+		// Update dist value of the adjacent vertices of the picked vertex.
+		for (int v = 0; v < numVertices; v++) {
+			// Update distance[v] only if is not in sptSet, there is an edge from u to v, and total weight of path from src to v through u is smaller than current value of distance[v]
+			if (!sptSet[v] && matrix[u][v] && distance[u] != std::numeric_limits<int>::max() && distance[u] + matrix[u][v] < distance[v]) {
+				distance[v] = distance[u] + matrix[u][v];
 			}
 		}
 	}
 }
 
 /**
- * printMST()
+ * printDistance
  * @param none
- * @return void
- * 
- * This function prints the minimum spanning tree.
+ * @return none
+ *
+ * This function prints the distance array.
  */
 
-void PrimHeap::printMST()
-{
-	std::cout << "The MST: \n";
-	for (int i = 1; i < numVertices; i++)
-	{
-		std::cout << parent[i] << " " << i << " " << key[i] << "\n";
+void PrimList::printDistance() {
+	std::cout << "The distance array: \n";
+	for (int i = 0; i < numVertices; i++) {
+		std::cout << distance[i] << "\t";
 	}
+	std::cout << "\n";
 }
-
-

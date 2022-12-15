@@ -12,59 +12,23 @@
 #include <iostream>
 #include <limits>
 #include <stdio.h>
+#include "header.h"
 
-/**
- * generateMatrix
- * @param - int numVertices - the number of vertices in the graph
- * @param - int numEdges - the number of edges in the graph
- * @param - int maxWeight - the maximum weight of an edge in the graph
- * 
- * This function generates a random adjacency matrix for a graph with numVertices vertices and numEdges edges. The maximum weight of an edge is maxWeight.
- */
-
-int** generateMatrix(int numVertices, int numEdges, int maxWeight) {
-	int** matrix = new int* [numVertices];
-	for (int i = 0; i < numVertices; i++) {
-		matrix[i] = new int[numVertices];
-	}
-	for (int i = 0; i < numVertices; i++) {
-		for (int j = 0; j < numVertices; j++) {
-			matrix[i][j] = 0;
-		}
-	}
-	int numEdgesAdded = 0;
-	while (numEdgesAdded < numEdges) {
-		int i = rand() % numVertices;
-		int j = rand() % numVertices;
-		if (i != j && matrix[i][j] == 0) {
-			matrix[i][j] = rand() % maxWeight + 1;
-			matrix[j][i] = matrix[i][j];
-			numEdgesAdded++;
-		}
-	}
-	/** Print the generated matrix. */
-	std::cout << "The generated matrix: \n";
-	for (int i = 0; i < numVertices; i++) {
-		for (int j = 0; j < numVertices; j++) {
-			std::cout << matrix[i][j] << " ";
-		}
-		std::cout << "\n";
-	}
-	return matrix;
-}
+ /**
+  * PrimMatrix's Algorithm
+  */
 
 class PrimMatrix {
 public:
 	PrimMatrix(int numVertices, int** matrix);
 	~PrimMatrix();
-	void runPrim();
-	void printMST();
+	void runPrimMatrix();
+	void printDistance();
 private:
 	int numVertices;
 	int** matrix;
-	int* parent;
-	int* key;
-	bool* mstSet;
+	int* distance;
+	bool* sptSet;
 };
 
 /**
@@ -72,79 +36,75 @@ private:
  * @param - int numVertices - number of vertices in the graph
  * @param - int** matrix - adjacency matrix of the graph
  * @return none
- * 
- * This is the constructor for PrimMatrix. It initializes the class variables.
  */
 
 PrimMatrix::PrimMatrix(int numVertices, int** matrix) {
 	this->numVertices = numVertices;
 	this->matrix = matrix;
-	parent = new int[numVertices];
-	key = new int[numVertices];
-	mstSet = new bool[numVertices];
+	distance = new int[numVertices];
+	sptSet = new bool[numVertices];
 }
 
 /**
  * ~PrimMatrix
  * @param none
  * @return none
- * 
- * This is the destructor. It frees up memory by deleting parent, key, and mstSet.
  */
 
 PrimMatrix::~PrimMatrix() {
-	delete[] parent;
-	delete[] key;
-	delete[] mstSet;
+	delete[] distance;
+	delete[] sptSet;
 }
 
 /**
- * runPrim()
+ * runPrimMatrix
  * @param none
- * @return void
+ * @return none
  *
- * This function runs Prim's Algorithm using an adjacency matrix with unsorted array for priority queue.
+ * This function runs PrimMatrix's Algorithm.
  */
 
-void PrimMatrix::runPrim() {
+void PrimMatrix::runPrimMatrix() {
+	// Initialize all distances as INFINITE and stpSet[] as false
 	for (int i = 0; i < numVertices; i++) {
-		key[i] = std::numeric_limits<int>::max();
-		mstSet[i] = false;
+		distance[i] = std::numeric_limits<int>::max();
+		sptSet[i] = false;
 	}
-	key[0] = 0;
-	parent[0] = -1;
+
+	// Distance of source vertex from itself is always 0
+	distance[0] = 0;
+
+	// Find shortest path for all vertices
 	for (int count = 0; count < numVertices - 1; count++) {
-		int min = std::numeric_limits<int>::max();
-		int minIndex;
+		// Pick the minimum distance vertex from the set of vertices not yet processed. u is always equal to src in first iteration.
+		int u = minDistance(numVertices, distance, sptSet);
+
+		// Mark the picked vertex as processed
+		sptSet[u] = true;
+
+		// Update dist value of the adjacent vertices of the picked vertex.
 		for (int v = 0; v < numVertices; v++) {
-			if (mstSet[v] == false && key[v] < min) {
-				min = key[v];
-				minIndex = v;
-			}
-		}
-		mstSet[minIndex] = true;
-		for (int v = 0; v < numVertices; v++) {
-			if (matrix[minIndex][v] && mstSet[v] == false && matrix[minIndex][v] < key[v]) {
-				parent[v] = minIndex;
-				key[v] = matrix[minIndex][v];
+			// Update distance[v] only if is not in sptSet, there is an edge from u to v, and total weight of path from src to v through u is smaller than current value of distance[v]
+			if (!sptSet[v] && matrix[u][v] && distance[u] != std::numeric_limits<int>::max() && distance[u] + matrix[u][v] < distance[v]) {
+				distance[v] = distance[u] + matrix[u][v];
 			}
 		}
 	}
 }
 
 /**
- * printMST()
+ * printDistance
  * @param none
- * @return void
- * 
- * This function prints the MST.
+ * @return none
+ *
+ * This function prints the distance array.
  */
 
-void PrimMatrix::printMST() {
-	// print the minimum spanning tree
-	printf("Edge \tWeight");
-	for (int i = 1; i < numVertices; i++) {
-		printf("%d - %d \t%d \n", parent[i], i, matrix[i][parent[i]]);
+void PrimMatrix::printDistance() {
+	std::cout << "The distance array" << std::endl;
+	for (int i = 0; i < numVertices; i++) {
+		std::cout << distance[i] << "\t";
 	}
+	std::cout << "\n";
 }
 

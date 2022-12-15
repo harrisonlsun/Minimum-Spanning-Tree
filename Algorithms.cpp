@@ -13,6 +13,7 @@
 #include "prim_list.h"
 #include "djikstra.h"
 #include "bellman-ford.h"
+#include "header.h"
 
 /**
  * main
@@ -25,5 +26,45 @@
 
 int main(int argc, int* argv[])
 {
+	int numVertices = 5;
+	int numEdges = 10;
+	int maxWeight = 10;
+
+	/** Prim's Algorithm with adjacency matrix. */
+	std::cout << "Prim's Algorithm with adjacency matrix" << std::endl;
+	/** Generate a random adjacency matrix. */
+	int** matrix = generateMatrix(numVertices, numEdges, maxWeight);
+	/** Run Prim's Algorithm with adjacency matrix. */
+	PrimMatrix* primMatrix = new PrimMatrix(numVertices, matrix);
+	primMatrix->runPrimMatrix();
+	/** Print the MST. */
+	primMatrix->printDistance();
+
+	/** Prim's Algorithm with adjacency list. */
+	std::cout << "\nPrim's Algorithm with adjacency list" << std::endl;
+	/** Generate a random adjacency list. */
+	int** matrixPL = generateMatrix(numVertices, numEdges, maxWeight);
+	/** Run Prim's Algorithm with adjacency list. */
+	PrimList* primList = new PrimList(numVertices, matrixPL);
+	primList->runPrimList();
 	
+	
+	/** Dijkstra's Algorithm */
+	std::cout << "\nDijkstra's Algorithm" << std::endl;
+	/** Generate a random adjacency matrix. */
+	int** matrixDJ = generateMatrix(numVertices, numEdges, maxWeight);
+	/** Run Djikstra's Algorithm. */
+	Dijkstra* dijkstra = new Dijkstra(numVertices, matrixDJ);
+	dijkstra->runDjikstra();
+	/** Print the shortest paths. */
+	dijkstra->printDistance();
+
+	/** Bellman-Ford Algorithm */
+	std::cout << "\nBellman Ford\n";
+	/** Generate a random adjacency matrix. */
+	int** matrixBF = generateMatrix(numVertices, numEdges, maxWeight);
+	/** Run Bellman-Ford Algorithm. */
+	BellmanFord* bellmanFord = new BellmanFord(numVertices, matrixBF);
+	
+	return 0;
 }
